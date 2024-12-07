@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book a Table</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 2rem;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #ff6b6b;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .booking-container {
+            padding-top: 100px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        .booking-form {
+            background: #f8f8f8;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .search-btn {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .search-btn:hover {
+            background-color: #ff5252;
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .table-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .table-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .table-info {
+            padding: 1.5rem;
+        }
+
+        .table-info h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .table-features {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .table-features li {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .book-btn {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .book-btn:hover {
+            background-color: #ff5252;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 2rem;
+            border-radius: 8px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 4rem 2rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .contact-info div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                margin-top: 1rem;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="index.html">Restaurant Name</a>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="book_a_table.html">Book a Table</a>
+            <a href="reservations.html">My Reservations</a>
+            <a href="waitlist.html">My Wait List</a>
+        </div>
+    </nav>
+
+    <div class="booking-container">
+        <div class="booking-form">
+            <form id="searchForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="time">Time:</label>
+                        <select id="time" name="time" required>
+                            <option value="">Select time</option>
+                            <option value="17:00">5:00 PM</option>
+                            <option value="18:00">6:00 PM</option>
+                            <option value="19:00">7:00 PM</option>
+                            <option value="20:00">8:00 PM</option>
+                            <option value="21:00">9:00 PM</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="guests">Number of Guests:</label>
+                        <select id="guests" name="guests" required>
+                            <option value="">Select guests</option>
+                            <option value="1">1 Person</option>
+                            <option value="2">2 People</option>
+                            <option value="3">3 People</option>
+                            <option value="4">4 People</option>
+                            <option value="5">5 People</option>
+                            <option value="6">6 People</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="search-btn">Search Available Tables</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="availableTables" class="tables-grid"></div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>Confirm Reservation</h2>
+            <div id="reservationSummary"></div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <div class="contact-info">
+                    <div>
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>123 Restaurant Street, City, Country</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-phone"></i>
+                        <span>+1 234 567 890</span>
+                    </div>
+                    <div>
+                        <i class="fas fa-envelope"></i>
+                        <span>info@restaurant.com</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Opening Hours</h3>
+                <div class="contact-info">
+                    <div>Monday - Friday: 11:00 - 22:00</div>
+                    <div>Saturday - Sunday: 10:00 - 23:00</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentTableId = null;
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchAvailableTables();
+        });
+
+        function searchAvailableTables() {
+            const formData = new FormData();
+            formData.append('date', document.getElementById('date').value);
+            formData.append('time', document.getElementById('time').value);
+            formData.append('guests', document.getElementById('guests').value);
+
+            fetch('check_availability.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const tablesGrid = document.getElementById('availableTables');
+                tablesGrid.innerHTML = data.tables.map(table => `
+                    <div class="table-card">
+                        <img src="${table.image_url}" alt="${table.name}" class="table-image">
+                        <div class="table-info">
+                            <h3>${table.name}</h3>
+                            <ul class="table-features">
+                                ${table.features.map(feature => `<li>${feature}</li>`).join('')}
+                                <li>Capacity: ${table.capacity} people</li>
+                            </ul>
+                            <button class="book-btn" onclick="showConfirmation(${table.id})">Book This Table</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function showConfirmation(tableId) {
+            currentTableId = tableId;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('time').value;
+            const guests = document.getElementById('guests').value;
+
+            const modal = document.getElementById('confirmationModal');
+            const summary = document.getElementById('reservationSummary');
+            summary.innerHTML = `
+                <p><strong>Date:</strong> ${date}</p>
+                <p><strong>Time:</strong> ${time}</p>
+                <p><strong>Number of Guests:</strong> ${guests}</p>
+                <p><strong>Table:</strong> Table ${tableId}</p>
+                <div style="margin-top: 20px;">
+                    <button onclick="confirmReservation()" class="book-btn">Confirm Booking</button>
+                </div>
+            `;
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        }
+
+        function confirmReservation() {
+            const formData = new FormData();
+            formData.append('table_id', currentTableId);
+            formData.append('date', document.getElementById('date').value);
+            formData.append('time', document.getElementById('time').value);
+            formData.append('guests', document.getElementById('guests').value);
+            formData.append('confirm', true);
+
+            fetch('make_reservation.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const summaryHtml = `
+                    <h3>Reservation Confirmed!</h3>
+                    <p>Your table has been reserved successfully.</p>
+                    <p><strong>Date:</strong> ${data.date}</p>
+                    <p><strong>Time:</strong> ${data.time}</p>
+                    <p><strong>Table:</strong> ${data.table_name}</p>
+                    <p><strong>Guests:</strong> ${data.guests}</p>
+                    <div style="margin-top: 20px;">
+                        <button onclick='addToGoogleCalendar(${JSON.stringify(data)})' class="book-btn">
+                            Add to Google Calendar
+                        </button>
+                    </div>
+                `;
+                document.getElementById('reservationSummary').innerHTML = summaryHtml;
+            });
+        }
+
+        function addToGoogleCalendar(reservationData) {
+            fetch('add_to_calendar.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reservationData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.auth_url) {
+                    // Redirect to Google authorization
+                    window.location.href = data.auth_url;
+                } else if (data.success) {
+                    alert('Event added to your Google Calendar!');
+                } else if (data.error) {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('confirmationModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
