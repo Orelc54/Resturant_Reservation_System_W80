@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Waitlist</title>
+    <link href="../style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../HomePage.html">Restaurant Name</a>
+        </div>
+        <div class="nav-links">
+            <a href="../HomePage.html">Home</a>
+            <a href="../bookAtable/book_a_table.html">Book a Table</a>
+            <a href="../myReservations/my_reservations.html">My Reservations</a>
+            <a href="waitlist.html">My Wait List</a>
+        </div>
+    </nav>
+    <div class="waitlist-container">
+        <div class="page-header">
+            <h1>My Waitlist</h1>
+            <p>Track and manage your table waitlist requests</p>
+        </div>
+        <div id="waitlistCards"></div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchWaitlists();
+        });
+
+        function fetchWaitlists() {
+            fetch('fetch_waitlist.php', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('waitlistCards');
+                    if (data.waitlists.length === 0) {
+                        container.innerHTML = `
+                            <div class="no-waitlist">
+                                <h3>No Waitlists Found</h3>
+                                <p>You are not on any waitlists at the moment.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    container.innerHTML = data.waitlists.map(waitlist => `
+                        <div class="waitlist-card">
+                            <div class="waitlist-details">
+                                <p><strong>Date:</strong> ${formatDate(waitlist.date)}</p>
+                                <p><strong>Time:</strong> ${formatTime(waitlist.time)}</p>
+                                <p><strong>Guests:</strong> ${waitlist.guests} ${waitlist.guests > 1 ? 'people' : 'person'}</p>
+                                <p><strong>Position:</strong> #${waitlist.position} in line</p>
+                                <p><strong>Estimated Wait:</strong> ${formatWaitTime(waitlist.estimated_wait)}</p>
+                                ${waitlist.notification_sent ? `
+                                    <div class="notification-alert">
+                                        <p class="urgent">Table Available! Check your email.</p>
+                                        <p class="countdown">Time remaining: <span id="countdown-${waitlist.id}"></span></p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <button class="cancel-btn" onclick="cancelWaitlist(${waitlist.id})">
+                                Cancel Request
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    // Initialize countdowns for active notifications
+                    data.waitlists.forEach(waitlist => {
+                        if (waitlist.notification_sent) {
+                            initializeCountdown(waitlist.id, waitlist.notification_time);
+                        }
+                    });
+                });
+        }
+
+        function formatDate(dateStr) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString(undefined, options);
+        }
+
+        function formatTime(timeStr) {
+            return new Date('1970/01/01 ' + timeStr).toLocaleTimeString(undefined, {
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+
+        function formatWaitTime(minutes) {
+            if (minutes < 60) {
+                return `${minutes} minutes`;
+            }
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            return `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minutes`;
+        }
+
+        function initializeCountdown(waitlistId, notificationTime) {
+            const countdownElement = document.getElementById(`countdown-${waitlistId}`);
+            const endTime = new Date(notificationTime).getTime() + (30 * 60 * 1000); // 30 minutes from notification
+            
+            const updateCountdown = () => {
+                const now = new Date().getTime();
+                const timeLeft = endTime - now;
+                
+                if (timeLeft <= 0) {
+                    countdownElement.innerHTML = 'Expired';
+                    return;
+                }
+                
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                countdownElement.innerHTML = `${minutes}m ${seconds}s`;
+            };
+            
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        }
+
+        function cancelWaitlist(waitlistId) {
+            if (!confirm('Are you sure you want to cancel this waitlist?')) {
+                return;
+            }
+            fetch('cancel_waitlist.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: waitlistId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Waitlist cancelled successfully.');
+                    fetchWaitlists();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to cancel waitlist. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
