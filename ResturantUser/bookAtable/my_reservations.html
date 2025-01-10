@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Reservations</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+        <link href="../style.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <a href="../HomePage.html">Restaurant Name</a>
+        </div>
+        <div class="nav-links">
+            <a href="../HomePage.html">Home</a>
+            <a href="../bookAtable/book_a_table.html">Book a Table</a>
+            <a href="my_reservations.html">My Reservations</a>
+            <a href="../waitList/waitlist.html">My Wait List</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>My Reservations</h1>
+        <p>Track and manage your restaurant reservations</p>
+        <button id="toggleReservationsBtn" class="toggle-btn">Show Past Reservations</button>
+        <div id="reservationsGrid" class="reservations-list">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadReservations('future');
+
+            const toggleBtn = document.getElementById('toggleReservationsBtn');
+            toggleBtn.addEventListener('click', () => {
+                const isShowingPast = toggleBtn.textContent.includes('Past');
+                loadReservations(isShowingPast ? 'past' : 'future');
+                toggleBtn.textContent = isShowingPast 
+                    ? 'Show Future Reservations' 
+                    : 'Show Past Reservations';
+            });
+        });
+
+        function loadReservations(filter) {
+            fetch('get_user_reservations.php')
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('reservationsGrid');
+
+                    const now = new Date();
+                    const filteredData = data.filter(reservation => {
+                        const reservationDate = new Date(reservation.date + ' ' + reservation.time);
+                        return filter === 'past' 
+                            ? reservationDate < now 
+                            : reservationDate >= now;
+                    });
+
+                    if (filteredData.length === 0) {
+                        grid.innerHTML = `
+                            <div class="empty-message">
+                                <h3>No ${filter === 'past' ? 'past' : 'upcoming'} reservations found</h3>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    grid.innerHTML = filteredData.map(reservation => {
+                        const reservationDate = new Date(reservation.date + ' ' + reservation.time);
+                        const isPast = reservationDate < now;
+
+                        return `
+                            <div class="reservation-item">
+                                <div class="reservation-info">
+                                    <div class="reservation-date-time">
+                                        ${formatDate(reservation.date)} at ${formatTime(reservation.time)}
+                                    </div>
+                                    <div class="reservation-details">
+                                        Table: ${reservation.table_name} • ${reservation.guests} Guest${reservation.guests > 1 ? 's' : ''}
+                                    </div>
+                                </div>
+                                ${!isPast ? `
+                                    <button onclick="cancelReservation(${reservation.id})" class="cancel-btn">
+                                        Cancel
+                                    </button>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('reservationsGrid').innerHTML = `
+                        <div class="empty-message">
+                            <h3>Error loading reservations</h3>
+                            <p>Please try again later.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function cancelReservation(reservationId) {
+            if (confirm('Are you sure you want to cancel this reservation?')) {
+                fetch('cancel_reservation.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reservation_id: reservationId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Reservation cancelled successfully');
+                        loadReservations('future');
+                    } else {
+                        alert('Failed to cancel reservation: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to cancel reservation. Please try again.');
+                });
+            }
+        }
+
+        function formatDate(dateStr) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString(undefined, options);
+        }
+
+        function formatTime(timeStr) {
+            return new Date('1970/01/01 ' + timeStr).toLocaleTimeString(undefined, {
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+        }
+    </script>
+</body>
+</html>
