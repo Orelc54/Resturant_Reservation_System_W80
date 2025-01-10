@@ -3,7 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 // Database connection
-$conn = mysqli_connect("localhost:8000", "username", "password", "restaurant_db");
+$conn = mysqli_connect("localhost", "orelcn_resturant", "^vb$*.kdGngG", "orelcn_restaurant_db");
 
 if (!$conn) {
     die(json_encode(['error' => 'Connection failed']));
