@@ -81,7 +81,7 @@ if ($stmt->execute()) {
         $client = new Client([
             'base_uri' => 'https://api.brevo.com/v3/',
             'headers' => [
-                'api-key' => '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',
+                'api-key' => '',
                 'Content-Type' => 'application/json',
             ],
         ]);
