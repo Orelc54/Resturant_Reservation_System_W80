@@ -54,11 +54,6 @@
                                 <p><strong>Guests:</strong> ${waitlist.guests} ${waitlist.guests > 1 ? 'people' : 'person'}</p>
                                 <p><strong>Position:</strong> #${waitlist.position} in line</p>
                                 <p><strong>Estimated Wait:</strong> ${formatWaitTime(waitlist.estimated_wait)}</p>
-                                ${waitlist.notification_sent ? `
-                                    <div class="notification-alert">
-                                        <p class="urgent">Table Available! Check your email.</p>
-                                    </div>
-                                ` : ''}
                             </div>
                             <button class="cancel-btn" onclick="cancelWaitlist(${waitlist.id})">
                                 Cancel Request
