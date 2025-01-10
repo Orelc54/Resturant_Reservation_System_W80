@@ -25,7 +25,7 @@
         </div>
         <div id="waitlistCards"></div>
     </div>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             fetchWaitlists();
@@ -57,7 +57,6 @@
                                 ${waitlist.notification_sent ? `
                                     <div class="notification-alert">
                                         <p class="urgent">Table Available! Check your email.</p>
-                                        <p class="countdown">Time remaining: <span id="countdown-${waitlist.id}"></span></p>
                                     </div>
                                 ` : ''}
                             </div>
@@ -66,13 +65,6 @@
                             </button>
                         </div>
                     `).join('');
-                    
-                    // Initialize countdowns for active notifications
-                    data.waitlists.forEach(waitlist => {
-                        if (waitlist.notification_sent) {
-                            initializeCountdown(waitlist.id, waitlist.notification_time);
-                        }
-                    });
                 });
         }
 
@@ -95,29 +87,6 @@
             const hours = Math.floor(minutes / 60);
             const remainingMinutes = minutes % 60;
             return `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minutes`;
-        }
-
-        function initializeCountdown(waitlistId, notificationTime) {
-            const countdownElement = document.getElementById(`countdown-${waitlistId}`);
-            const endTime = new Date(notificationTime).getTime() + (30 * 60 * 1000); // 30 minutes from notification
-            
-            const updateCountdown = () => {
-                const now = new Date().getTime();
-                const timeLeft = endTime - now;
-                
-                if (timeLeft <= 0) {
-                    countdownElement.innerHTML = 'Expired';
-                    return;
-                }
-                
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                
-                countdownElement.innerHTML = `${minutes}m ${seconds}s`;
-            };
-            
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
         }
 
         function cancelWaitlist(waitlistId) {
