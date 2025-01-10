@@ -1,9 +1,7 @@
 <?php
 session_start();
-
 // Database connection
-$conn = mysqli_connect("localhost", "username", "password", "restaurant_db");
-
+$conn = mysqli_connect("localhost", "orelcn_resturant", "^vb$*.kdGngG", "orelcn_restaurant_db");
 if (!$conn) {
     die(json_encode(['error' => 'Connection failed']));
 }
@@ -13,9 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $time = mysqli_real_escape_string($conn, $_POST['time']);
     $guests = (int)$_POST['guests'];
     
-    // Get all tables that:
-    // 1. Can accommodate the number of guests
-    // 2. Are not reserved within 2 hours of the requested time
+    // query to check only for reservations within the next hour
     $sql = "SELECT t.* 
             FROM tables t 
             WHERE t.capacity >= ?
@@ -23,8 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 SELECT r.table_id 
                 FROM reservations r 
                 WHERE r.reservation_date = ?
-                AND ABS(TIMESTAMPDIFF(MINUTE, r.reservation_time, ?)) < 120
                 AND r.status = 'confirmed'
+                AND (
+                    -- Check if there's a reservation within the next hour
+                    TIME_TO_SEC(TIMEDIFF(r.reservation_time, ?)) BETWEEN 0 AND 3600
+                )
             )
             ORDER BY t.capacity";
             
@@ -39,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $tables = [];
     while ($row = $result->fetch_assoc()) {
-        // Format table features
         $table = [
             'id' => $row['id'],
             'name' => $row['name'],
@@ -58,6 +56,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'guests' => $guests
     ]);
 }
-
 $conn->close();
 ?>
